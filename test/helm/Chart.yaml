@@ -1,0 +1,4 @@
+apiVersion: v1
+description: Test environment
+name: helm-test-station
+version: "0.0.1"

@@ -1,0 +1,4 @@
+apiVersion: v1
+description: Stage environment
+name: helm-stage-station
+version: "0.0.1"
