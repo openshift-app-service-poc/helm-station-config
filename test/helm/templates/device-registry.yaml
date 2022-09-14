@@ -1,15 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: helm-test-app
+  name: device-registry
+  version:  0.1.0
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: test
   source:
-    path: charts/test-app
-    repoURL: https://github.com/openshift-app-service-poc/test-apps.git
+    path: charts/device-registry
+    repoURL: https://github.com/openshift-app-service-poc/test-stage-station.git
     targetRevision: HEAD
     helm:
       values: |
