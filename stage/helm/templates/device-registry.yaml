@@ -9,8 +9,8 @@ metadata:
 spec:
   project: test
   source:
-    path: charts/test-app
-    repoURL: https://github.com/openshift-app-service-poc/test-apps.git
+    path: charts/device-registry
+    repoURL: https://github.com/openshift-app-service-poc/test-stage-station.git
     targetRevision: HEAD
     helm:
       values: |
