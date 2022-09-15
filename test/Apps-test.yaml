@@ -8,7 +8,7 @@ metadata:
 spec:
   project: test
   source:
-    repoURL: https://github.com/openshift-app-service-poc/helm-test-config.git
+    repoURL: https://github.com/openshift-app-service-poc/helm-station-config.git
     targetRevision: HEAD
     path: test/helm
   destination:
