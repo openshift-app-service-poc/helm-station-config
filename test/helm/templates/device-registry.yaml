@@ -13,7 +13,7 @@ spec:
     repoURL: https://github.com/openshift-app-service-poc/helm-stage-station
     targetRevision: HEAD
   destination:
-    namespace: test-station
+    namespace: testa
     server: https://kubernetes.default.svc
   syncPolicy:
     automated:
