@@ -2,7 +2,6 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: device-registry
-  version: 0.1.1
   namespace: testa
   finalizers:
     - resources-finalizer.argocd.argoproj.io
