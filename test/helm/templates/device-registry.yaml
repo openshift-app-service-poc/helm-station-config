@@ -2,10 +2,12 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: device-registry
-  version: 0.1.1
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/name: device-registr
+    app.kubernetes.io/version: 0.0.0
 spec:
   project: test
   source:
