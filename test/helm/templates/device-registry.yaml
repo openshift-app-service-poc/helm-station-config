@@ -12,7 +12,6 @@ spec:
     path: charts/device-registry
     repoURL: https://github.com/openshift-app-service-poc/helm-stage-station
     targetRevision: HEAD
-      version: v3
   destination:
     namespace: test-station
     server: https://kubernetes.default.svc
