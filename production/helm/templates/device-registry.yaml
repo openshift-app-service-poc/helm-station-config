@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/name: device-registry
     app.kubernetes.io/version: 0.1.1
 spec:
-  project: test
+  project: default
   source:
     path: charts/device-registry
     repoURL: https://github.com/openshift-app-service-poc/test-stage-station.git
@@ -22,7 +22,7 @@ spec:
           host: test-app.$INGRESS.xip.io
       version: v3
   destination:
-    namespace: test-station
+    namespace: production
     server: https://kubernetes.default.svc
   syncPolicy:
     automated:

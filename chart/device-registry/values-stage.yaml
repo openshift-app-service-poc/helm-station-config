@@ -1,0 +1,20 @@
+database:
+  volume:
+    storageClassName: gp2
+  rootPassword: something
+  database_name: device_db
+
+mysql:
+  image: mysql
+  tag: "5.6"
+
+device:
+  image: "quay.io/susdas/device_image"
+  tag: "latest"
+
+application:
+  name: device-registry-app
+
+replicaCount: 2
+
+demo: 0.1.1
