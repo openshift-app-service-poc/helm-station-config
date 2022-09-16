@@ -8,7 +8,7 @@ metadata:
 spec:
   project: tage
   source:
-    repoURL: https://github.com/openshift-app-service-poc/helm-stage-station.git
+    repoURL: https://github.com/openshift-app-service-poc/helm-station-config.git
     targetRevision: HEAD
     path: stage/helm
   destination:
