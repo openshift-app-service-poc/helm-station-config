@@ -12,15 +12,8 @@ spec:
   project: default
   source:
     path: charts/device-registry
-    repoURL: https://github.com/openshift-app-service-poc/test-stage-station.git
+    repoURL: https://github.com/openshift-app-service-poc/helm-stage-station
     targetRevision: HEAD
-    helm:
-      values: |
-        image:
-          tag: latest
-        ingress:
-          host: test-app.$INGRESS.xip.io
-      version: v3
   destination:
     namespace: test
     server: https://kubernetes.default.svc
