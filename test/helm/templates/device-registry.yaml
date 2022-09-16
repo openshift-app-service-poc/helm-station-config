@@ -22,7 +22,7 @@ spec:
           host: test-app.$INGRESS.xip.io
       version: v3
   destination:
-    namespace: test-station
+    namespace: test
     server: https://kubernetes.default.svc
   syncPolicy:
     automated:
