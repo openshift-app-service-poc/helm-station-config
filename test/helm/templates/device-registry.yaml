@@ -7,7 +7,7 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/name: device-registry
-    app.kubernetes.io/version: 0.0.0
+    app.kubernetes.io/version: 0.1.1
 spec:
   project: test
   source:
