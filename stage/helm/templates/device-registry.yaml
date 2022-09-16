@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: device-registry
-  namespace: openshift-gitops
+  namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
