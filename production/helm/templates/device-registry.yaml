@@ -6,7 +6,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
-    app.kubernetes.io/name: device-registr
+    app.kubernetes.io/name: device-registry
     app.kubernetes.io/version: 0.0.0
 spec:
   project: test
