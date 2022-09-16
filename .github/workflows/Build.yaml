@@ -1,0 +1,145 @@
+name: Build, Test and Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.API_TOKEN_GITHUB }}
+
+      - name: Get files in push request
+        id: files
+        uses: jitterbit/get-changed-files@v1
+        with:
+          format: 'csv'
+
+      - name: Check if chart template file was chnaged
+        id: check_files
+        run: |
+          mapfile -d ',' -t added_modified_files < <(printf '%s,' '${{ steps.files.outputs.added_modified }}')
+          for added_modified_file in "${added_modified_files[@]}"; do
+            echo "Do something with this ${added_modified_file}"
+            if [ "${added_modified_file}" == "test/helm/templates/"*".yaml" ]; then
+                echo "test update: ${added_modified_file}"
+                echo "::set-output name=test_phase::test"
+                echo "::set-output name=next_phase::stage"
+                echo "::set-output name=updated_file::${added_modified_file}"
+                base_name=$(basename ${added_modified_file})
+                echo "::set-output name=next_file::stage/helm/templates/$base_name"
+            elif [ "${added_modified_file}" == "stage/helm/templates/"*".yaml" ]; then
+                echo "stage update: ${added_modified_file}"
+                echo "::set-output name=test_phase::stage"
+                echo "::set-output name=next_phase::production"
+                echo "::set-output name=updated_file::${added_modified_file}"
+                base_name=$(basename ${added_modified_file})
+                echo "::set-output name=next_file::production/helm/templates/$base_name"
+            elif  [ "${added_modified_file}" == "production/helm/templates/"*".yaml" ]; then
+                echo "production update: ${added_modified_file}"
+                echo "::set-output name=test_phase::production"
+                echo "::set-output name=next_phase::none"
+                echo "::set-output name=updated_file::${added_modified_file}"
+                echo "::set-output name=next_file::none"
+            else
+                echo "ignore update"
+                echo "::set-output name=test-phase::none"
+                echo "::set-output name=next_phase::none"
+                echo "::set-output name=updated_file::none"
+                echo "::set-output name=next_file::none"
+            fi
+          done
+
+      - name: Get metadata from updated file
+        if: ${{ steps.check_files.outputs.updated_file != 'none' }}
+        id: template-yaml-data
+        uses: KJ002/read-yaml@main
+        with:
+            file: ${{ steps.check_files.outputs.updated_file }}
+            key-path: '["metadata"]'
+
+      - name: Write metadata to a json file
+        if: ${{ steps.check_files.outputs.updated_file != 'none' }}
+        env:
+          METADATA: ${{ steps.template-yaml-data.outputs.data }}
+        run: |
+          echo metadata: $METADATA
+          echo $METADATA | sed 's:app.kubernetes.io/::g'
+          echo $METADATA | sed 's:app.kubernetes.io/::g' > temp.json
+
+      - name: get config version from metadata
+        if: ${{ steps.check_files.outputs.updated_file != 'none' }}
+        id: config-version
+        uses: notiz-dev/github-action-json-property@release
+        with:
+          path: 'temp.json'
+          prop_path: 'labels.version'
+
+      - if: ${{ steps.check_files.outputs.updated_file != 'none' }}
+        id: new_version
+        run: |
+          echo "updated version is ${{ steps.config-version.outputs.prop }}"
+          echo "::set-output name=version::${{ steps.config-version.outputs.prop }}"
+          rm temp.json
+
+      - name: If test phase run helm test
+        id: test_phase
+        if: ${{ steps.check_files.outputs.test_phase == 'test' }}
+        run: |
+          echo "Updated test file: ${{ steps.check_files.outputs.updated_file }}"
+          echo "File to be updated: ${{ steps.check_files.outputs.next_file }}"
+
+      - name: If stage phase run helm stress test
+        id: stage_phase
+        if: ${{ steps.check_files.outputs.test_phase == 'stage' }}
+        run: |
+          echo "Updated stage file: ${{ steps.check_files.outputs.updated_file }}"
+          echo "File to be updated: ${{ steps.check_files.outputs.next_file }}"
+
+      - name: If stage production - celebrate!r
+        id: production_phase
+        if: ${{ steps.check_files.outputs.test_phase == 'production' }}
+        run: |
+          echo "Updated stage file: ${{ steps.check_files.outputs.updated_file }}"
+          echo "File to be updated: ${{ steps.check_files.outputs.next_file }}"
+
+      - name: Update next stage to trigger pipeline
+        id: update_file
+        if: ${{ steps.check_files.outputs.next_file != 'none' && steps.test_phase.outcome != 'failure' && steps.stage_phase.outcome != 'failure' }}
+        run: |
+          to_replace=""
+          while read -r line;
+          do
+            echo "check $line"
+            if [[ "$line" == "app.kubernetes.io/version"* ]]; then
+                to_replace=$line
+                echo "to_replace: $to_replace"
+                break
+            fi
+          done < ${{ steps.check_files.outputs.next_file}}
+
+          if [ "$to_replace" != "" ]; then
+              replace_with="app.kubernetes.io/version: "${{ steps.new_version.outputs.version }}
+              echo "replace_with: $replace_with"
+              sed -i "s|$to_replace|$replace_with|" ${{ steps.check_files.outputs.next_file }}
+          fi
+
+      - name: Commit the change
+        if: ${{ steps.check_files.outputs.next_file != 'none' && steps.test_phase.outcome != 'failure' && steps.stage_phase.outcome != 'failure' }}
+        uses: EndBug/add-and-commit@v9
+        with:
+         add: ${{ steps.check_files.outputs.next_file }}
+         author_name: mmulholla
+         author_email: mmulholl@redhat.com
+         default_author: github_actor
+         message: "Update ${{ steps.check_files.outputs.test_phase }} config chart version for Argo CD pipeline testing"
+         push: true
+
